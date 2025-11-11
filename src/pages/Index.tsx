@@ -2,9 +2,11 @@ import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Calendar, Bell, FileText, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import heroImage from "@/assets/hero-medical.jpg";
 
 const Index = () => {
+  const { user } = useAuth();
   const features = [
     {
       icon: Calendar,
@@ -51,12 +53,20 @@ const Index = () => {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button asChild size="lg" className="text-base">
-                  <Link to="/dashboard">Get Started</Link>
-                </Button>
-                <Button asChild variant="outline" size="lg" className="text-base">
-                  <Link to="/dashboard">View Dashboard</Link>
-                </Button>
+                {user ? (
+                  <Button asChild size="lg" className="text-base">
+                    <Link to="/dashboard">Go to Dashboard</Link>
+                  </Button>
+                ) : (
+                  <>
+                    <Button asChild size="lg" className="text-base">
+                      <Link to="/auth">Get Started</Link>
+                    </Button>
+                    <Button asChild variant="outline" size="lg" className="text-base">
+                      <Link to="/auth">Login</Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
             
@@ -115,7 +125,9 @@ const Index = () => {
               Join thousands of patients who trust HealthTrack to manage their hospital visits
             </p>
             <Button asChild size="lg" variant="secondary" className="text-base">
-              <Link to="/dashboard">Start Tracking Now</Link>
+              <Link to={user ? "/dashboard" : "/auth"}>
+                {user ? "Go to Dashboard" : "Start Tracking Now"}
+              </Link>
             </Button>
           </div>
         </div>
