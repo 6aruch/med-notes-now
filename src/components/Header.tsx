@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Activity, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import KYCStatusBadge from "./KYCStatusBadge";
 
 const Header = () => {
   const { user, signOut } = useAuth();
@@ -28,6 +29,7 @@ const Header = () => {
         </nav>
 
         <div className="flex items-center gap-4">
+          {user && <KYCStatusBadge />}
           {user ? (
             <Button variant="ghost" onClick={signOut}>
               <LogOut className="h-4 w-4 mr-2" />
