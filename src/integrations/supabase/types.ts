@@ -112,6 +112,114 @@ export type Database = {
           },
         ]
       }
+      kyc_audit_log: {
+        Row: {
+          accessed_by: string
+          action: string
+          created_at: string
+          id: string
+          kyc_document_id: string
+        }
+        Insert: {
+          accessed_by: string
+          action: string
+          created_at?: string
+          id?: string
+          kyc_document_id: string
+        }
+        Update: {
+          accessed_by?: string
+          action?: string
+          created_at?: string
+          id?: string
+          kyc_document_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kyc_audit_log_accessed_by_fkey"
+            columns: ["accessed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kyc_audit_log_kyc_document_id_fkey"
+            columns: ["kyc_document_id"]
+            isOneToOne: false
+            referencedRelation: "kyc_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kyc_documents: {
+        Row: {
+          created_at: string
+          date_of_birth: string | null
+          document_back_url: string | null
+          document_front_url: string | null
+          document_number: string
+          document_type: Database["public"]["Enums"]["kyc_document_type"]
+          full_name: string
+          id: string
+          rejection_reason: string | null
+          selfie_url: string | null
+          updated_at: string
+          user_id: string
+          verification_status: Database["public"]["Enums"]["kyc_status"]
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          date_of_birth?: string | null
+          document_back_url?: string | null
+          document_front_url?: string | null
+          document_number: string
+          document_type: Database["public"]["Enums"]["kyc_document_type"]
+          full_name: string
+          id?: string
+          rejection_reason?: string | null
+          selfie_url?: string | null
+          updated_at?: string
+          user_id: string
+          verification_status?: Database["public"]["Enums"]["kyc_status"]
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          date_of_birth?: string | null
+          document_back_url?: string | null
+          document_front_url?: string | null
+          document_number?: string
+          document_type?: Database["public"]["Enums"]["kyc_document_type"]
+          full_name?: string
+          id?: string
+          rejection_reason?: string | null
+          selfie_url?: string | null
+          updated_at?: string
+          user_id?: string
+          verification_status?: Database["public"]["Enums"]["kyc_status"]
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kyc_documents_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kyc_documents_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       medical_records: {
         Row: {
           appointment_id: string | null
@@ -285,6 +393,13 @@ export type Database = {
     }
     Enums: {
       app_role: "patient" | "doctor" | "admin"
+      kyc_document_type:
+        | "nin"
+        | "passport"
+        | "drivers_license"
+        | "voters_card"
+        | "national_id"
+      kyc_status: "pending" | "verified" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -413,6 +528,14 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["patient", "doctor", "admin"],
+      kyc_document_type: [
+        "nin",
+        "passport",
+        "drivers_license",
+        "voters_card",
+        "national_id",
+      ],
+      kyc_status: ["pending", "verified", "rejected"],
     },
   },
 } as const
