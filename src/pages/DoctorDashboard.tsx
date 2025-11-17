@@ -28,7 +28,7 @@ interface Appointment {
 
 const DoctorDashboard = () => {
   const navigate = useNavigate();
-  const { user, loading: authLoading, role } = useAuth();
+  const { user, loading: authLoading, role, isApproved } = useAuth();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [doctorId, setDoctorId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -164,6 +164,31 @@ const DoctorDashboard = () => {
         <Header />
         <div className="container py-8">
           <div className="text-center">Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isApproved) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <Card className="max-w-2xl mx-auto">
+            <div className="p-6">
+              <div className="mb-4">
+                <h2 className="text-2xl font-bold text-foreground">Account Pending Approval</h2>
+                <p className="text-muted-foreground mt-2">
+                  Your doctor account is pending admin approval. You will be able to access the system once your credentials have been verified.
+                </p>
+              </div>
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  This security measure ensures patient safety and data privacy. Please contact support if you have questions.
+                </p>
+              </div>
+            </div>
+          </Card>
         </div>
       </div>
     );

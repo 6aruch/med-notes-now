@@ -119,10 +119,14 @@ const Auth = () => {
               user_id: authData.user.id,
               specialization,
               license_number: licenseNumber,
+              approved: false, // Doctors require approval
             });
           
           if (doctorError) throw doctorError;
-          navigate("/doctor-dashboard");
+          
+          toast.success("Doctor account created! Awaiting admin approval to access the system.");
+          // Don't navigate - show message about pending approval
+          setMode("login");
         } else {
           const { error: patientError } = await supabase
             .from("patients")
@@ -132,9 +136,8 @@ const Auth = () => {
           
           if (patientError) throw patientError;
           navigate("/dashboard");
+          toast.success("Account created successfully");
         }
-        
-        toast.success("Account created successfully");
       }
     } catch (error: any) {
       toast.error(error.message || "Failed to create account");
