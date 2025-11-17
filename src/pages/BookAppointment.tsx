@@ -66,10 +66,12 @@ const BookAppointment = () => {
           id,
           specialization,
           user_id,
+          approved,
           profiles!inner (
             full_name
           )
-        `);
+        `)
+        .eq("approved", true); // Only show approved doctors
 
       if (error) throw error;
       setDoctors(data || []);

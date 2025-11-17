@@ -70,6 +70,7 @@ export type Database = {
       }
       doctors: {
         Row: {
+          approved: boolean
           bio: string | null
           created_at: string | null
           id: string
@@ -80,6 +81,7 @@ export type Database = {
           years_of_experience: number | null
         }
         Insert: {
+          approved?: boolean
           bio?: string | null
           created_at?: string | null
           id?: string
@@ -90,6 +92,7 @@ export type Database = {
           years_of_experience?: number | null
         }
         Update: {
+          approved?: boolean
           bio?: string | null
           created_at?: string | null
           id?: string
@@ -267,6 +270,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      doctor_has_patient: {
+        Args: { _doctor_user_id: string; _patient_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -274,6 +281,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_approved_doctor: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "patient" | "doctor" | "admin"

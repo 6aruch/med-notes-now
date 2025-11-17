@@ -8,6 +8,7 @@ export const useAuth = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState<string | null>(null);
+  const [isApproved, setIsApproved] = useState<boolean>(true); // Track doctor approval status
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -54,9 +55,24 @@ export const useAuth = () => {
       
       if (error) throw error;
       setRole(data?.role || null);
+      
+      // If user is a doctor, check approval status
+      if (data?.role === "doctor") {
+        const { data: doctorData, error: doctorError } = await supabase
+          .from("doctors")
+          .select("approved")
+          .eq("user_id", userId)
+          .single();
+        
+        if (doctorError) throw doctorError;
+        setIsApproved(doctorData?.approved || false);
+      } else {
+        setIsApproved(true); // Patients don't need approval
+      }
     } catch (error) {
       console.error("Error fetching user role:", error);
       setRole(null);
+      setIsApproved(true);
     } finally {
       setLoading(false);
     }
@@ -72,6 +88,7 @@ export const useAuth = () => {
     session,
     loading,
     role,
+    isApproved,
     signOut,
   };
 };
