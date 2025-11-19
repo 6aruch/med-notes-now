@@ -92,7 +92,8 @@ const DoctorDashboard = () => {
       if (appointmentsError) throw appointmentsError;
       setAppointments(appointmentsData || []);
     } catch (error: any) {
-      toast.error(error.message || "Failed to fetch data");
+      const { getUserFriendlyError } = await import("@/lib/errorHandler");
+      toast.error(getUserFriendlyError(error));
     } finally {
       setLoading(false);
     }
@@ -115,7 +116,8 @@ const DoctorDashboard = () => {
       
       toast.success("Appointment status updated");
     } catch (error: any) {
-      toast.error(error.message || "Failed to update status");
+      const { getUserFriendlyError } = await import("@/lib/errorHandler");
+      toast.error(getUserFriendlyError(error));
     }
   };
 
@@ -144,7 +146,8 @@ const DoctorDashboard = () => {
       setPrescription("");
       setNotes("");
     } catch (error: any) {
-      toast.error(error.message || "Failed to create record");
+      const { getUserFriendlyError } = await import("@/lib/errorHandler");
+      toast.error(getUserFriendlyError(error));
     } finally {
       setIsSubmitting(false);
     }

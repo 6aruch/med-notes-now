@@ -76,7 +76,8 @@ const Auth = () => {
         toast.success("Logged in successfully");
       }
     } catch (error: any) {
-      toast.error(error.message || "Failed to login");
+      const { getUserFriendlyError } = await import("@/lib/errorHandler");
+      toast.error(getUserFriendlyError(error));
     } finally {
       setIsLoading(false);
     }
@@ -158,7 +159,8 @@ const Auth = () => {
         }
       }
     } catch (error: any) {
-      toast.error(error.message || "Failed to create account");
+      const { getUserFriendlyError } = await import("@/lib/errorHandler");
+      toast.error(getUserFriendlyError(error));
     } finally {
       setIsLoading(false);
     }
@@ -179,7 +181,8 @@ const Auth = () => {
       setMode("login");
       setForgotEmail("");
     } catch (error: any) {
-      toast.error(error.message || "Failed to send reset email");
+      const { getUserFriendlyError } = await import("@/lib/errorHandler");
+      toast.error(getUserFriendlyError(error));
     } finally {
       setIsLoading(false);
     }
@@ -213,7 +216,8 @@ const Auth = () => {
       setConfirmPassword("");
       setIsResettingPassword(false);
     } catch (error: any) {
-      toast.error(error.message || "Failed to update password");
+      const { getUserFriendlyError } = await import("@/lib/errorHandler");
+      toast.error(getUserFriendlyError(error));
     } finally {
       setIsLoading(false);
     }
