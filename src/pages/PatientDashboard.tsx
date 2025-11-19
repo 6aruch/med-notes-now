@@ -117,7 +117,8 @@ const PatientDashboard = () => {
       if (recordsError) throw recordsError;
       setMedicalRecords(recordsData || []);
     } catch (error: any) {
-      toast.error(error.message || "Failed to fetch data");
+      const { getUserFriendlyError } = await import("@/lib/errorHandler");
+      toast.error(getUserFriendlyError(error));
     } finally {
       setLoading(false);
     }

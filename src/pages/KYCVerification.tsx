@@ -41,7 +41,8 @@ const KYCVerification = () => {
       if (error && error.code !== "PGRST116") throw error;
       setKycStatus(data);
     } catch (error: any) {
-      console.error("Error fetching KYC status:", error);
+      const { getUserFriendlyError } = await import("@/lib/errorHandler");
+      toast.error(getUserFriendlyError(error));
     } finally {
       setLoadingStatus(false);
     }
@@ -73,7 +74,8 @@ const KYCVerification = () => {
       toast.success("KYC documents submitted successfully! Awaiting verification.");
       await fetchKycStatus();
     } catch (error: any) {
-      toast.error(error.message || "Failed to submit KYC documents");
+      const { getUserFriendlyError } = await import("@/lib/errorHandler");
+      toast.error(getUserFriendlyError(error));
     } finally {
       setIsLoading(false);
     }

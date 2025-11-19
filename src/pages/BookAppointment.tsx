@@ -54,7 +54,8 @@ const BookAppointment = () => {
       if (error) throw error;
       setPatientId(data.id);
     } catch (error: any) {
-      toast.error(error.message || "Failed to fetch patient data");
+      const { getUserFriendlyError } = await import("@/lib/errorHandler");
+      toast.error(getUserFriendlyError(error));
     }
   };
 
@@ -65,18 +66,17 @@ const BookAppointment = () => {
         .select(`
           id,
           specialization,
-          user_id,
-          approved,
           profiles!inner (
             full_name
           )
         `)
-        .eq("approved", true); // Only show approved doctors
+        .eq("approved", true);
 
       if (error) throw error;
       setDoctors(data || []);
     } catch (error: any) {
-      toast.error(error.message || "Failed to fetch doctors");
+      const { getUserFriendlyError } = await import("@/lib/errorHandler");
+      toast.error(getUserFriendlyError(error));
     }
   };
 
@@ -107,7 +107,8 @@ const BookAppointment = () => {
       toast.success("Appointment booked successfully");
       navigate("/dashboard");
     } catch (error: any) {
-      toast.error(error.message || "Failed to book appointment");
+      const { getUserFriendlyError } = await import("@/lib/errorHandler");
+      toast.error(getUserFriendlyError(error));
     } finally {
       setIsSubmitting(false);
     }

@@ -390,6 +390,13 @@ export type Database = {
         Returns: boolean
       }
       is_approved_doctor: { Args: { _user_id: string }; Returns: boolean }
+      verify_user_role: {
+        Args: never
+        Returns: {
+          is_valid: boolean
+          role: Database["public"]["Enums"]["app_role"]
+        }[]
+      }
     }
     Enums: {
       app_role: "patient" | "doctor" | "admin"

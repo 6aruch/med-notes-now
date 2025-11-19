@@ -8,7 +8,7 @@ export const useAuth = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState<string | null>(null);
-  const [isApproved, setIsApproved] = useState<boolean>(true); // Track doctor approval status
+  const [isApproved, setIsApproved] = useState<boolean>(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,7 +19,7 @@ export const useAuth = () => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Fetch user role
+          // Defer role fetching to avoid deadlock
           setTimeout(() => {
             fetchUserRole(session.user.id);
           }, 0);
@@ -47,27 +47,30 @@ export const useAuth = () => {
 
   const fetchUserRole = async (userId: string) => {
     try {
-      const { data, error } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId)
-        .single();
+      // Use server-side role verification function
+      const { data, error } = await supabase.rpc('verify_user_role');
       
       if (error) throw error;
-      setRole(data?.role || null);
       
-      // If user is a doctor, check approval status
-      if (data?.role === "doctor") {
-        const { data: doctorData, error: doctorError } = await supabase
-          .from("doctors")
-          .select("approved")
-          .eq("user_id", userId)
-          .single();
+      if (data && data.length > 0) {
+        const userRole = data[0].role;
+        setRole(userRole);
         
-        if (doctorError) throw doctorError;
-        setIsApproved(doctorData?.approved || false);
+        // If user is a doctor, check approval status
+        if (userRole === "doctor") {
+          const { data: doctorData, error: doctorError } = await supabase
+            .from("doctors")
+            .select("approved")
+            .eq("user_id", userId)
+            .single();
+          
+          if (doctorError) throw doctorError;
+          setIsApproved(doctorData?.approved || false);
+        } else {
+          setIsApproved(true);
+        }
       } else {
-        setIsApproved(true); // Patients don't need approval
+        setRole(null);
       }
     } catch (error) {
       console.error("Error fetching user role:", error);
