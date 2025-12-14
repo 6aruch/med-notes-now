@@ -10,12 +10,73 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { CheckCircle, XCircle, Clock, Shield, Info } from "lucide-react";
+import { z } from "zod";
+
+// Validation schemas for different document types
+const documentPatterns = {
+  nin: /^[0-9]{11}$/, // NIN: 11 digits
+  passport: /^[A-Z][0-9]{8}$/, // Passport: 1 letter + 8 digits
+  drivers_license: /^[A-Z0-9]{10,12}$/, // Driver's license: 10-12 alphanumeric
+  voters_card: /^[A-Z0-9]{19}$/, // Voter's card: 19 alphanumeric
+  national_id: /^[A-Z0-9]{8,15}$/, // National ID: 8-15 alphanumeric
+};
+
+const documentFormatHints = {
+  nin: "11 digits (e.g., 12345678901)",
+  passport: "1 letter followed by 8 digits (e.g., A12345678)",
+  drivers_license: "10-12 alphanumeric characters",
+  voters_card: "19 alphanumeric characters",
+  national_id: "8-15 alphanumeric characters",
+};
+
+// Calculate min date (150 years ago) and max date (18 years ago for adults, or today for all)
+const getDateConstraints = () => {
+  const today = new Date();
+  const minDate = new Date(today.getFullYear() - 150, today.getMonth(), today.getDate());
+  const maxDate = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate()); // At least 1 year old
+  return { minDate, maxDate };
+};
+
+const createKycSchema = (documentType: string) => {
+  const pattern = documentPatterns[documentType as keyof typeof documentPatterns] || /^[A-Z0-9]{5,50}$/;
+  const { minDate, maxDate } = getDateConstraints();
+  
+  return z.object({
+    documentType: z.enum(["nin", "passport", "drivers_license", "voters_card", "national_id"], {
+      required_error: "Please select a document type",
+    }),
+    documentNumber: z.string()
+      .trim()
+      .min(5, "Document number must be at least 5 characters")
+      .max(50, "Document number must not exceed 50 characters")
+      .regex(/^[A-Z0-9]+$/i, "Document number must contain only letters and numbers")
+      .refine((val) => pattern.test(val.toUpperCase()), {
+        message: `Invalid format for this document type. Expected: ${documentFormatHints[documentType as keyof typeof documentFormatHints] || "alphanumeric"}`,
+      }),
+    fullName: z.string()
+      .trim()
+      .min(2, "Full name must be at least 2 characters")
+      .max(100, "Full name must not exceed 100 characters")
+      .regex(/^[a-zA-Z\s\-'.]+$/, "Full name can only contain letters, spaces, hyphens, apostrophes, and periods"),
+    dateOfBirth: z.string()
+      .min(1, "Date of birth is required")
+      .refine((val) => {
+        const date = new Date(val);
+        return !isNaN(date.getTime());
+      }, "Invalid date format")
+      .refine((val) => {
+        const date = new Date(val);
+        return date >= minDate && date <= maxDate;
+      }, "Date of birth must be a valid date in the past"),
+  });
+};
 
 const KYCVerification = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [kycStatus, setKycStatus] = useState<any>(null);
   const [loadingStatus, setLoadingStatus] = useState(true);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   
   // Form state
   const [documentType, setDocumentType] = useState<string>("");
@@ -48,6 +109,34 @@ const KYCVerification = () => {
     }
   };
 
+  const validateForm = () => {
+    if (!documentType) {
+      setValidationErrors({ documentType: "Please select a document type" });
+      return null;
+    }
+
+    const schema = createKycSchema(documentType);
+    const result = schema.safeParse({
+      documentType,
+      documentNumber: documentNumber.toUpperCase(),
+      fullName,
+      dateOfBirth,
+    });
+
+    if (!result.success) {
+      const errors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        const field = err.path[0] as string;
+        errors[field] = err.message;
+      });
+      setValidationErrors(errors);
+      return null;
+    }
+
+    setValidationErrors({});
+    return result.data;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -56,17 +145,19 @@ const KYCVerification = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Validate required fields
-      if (!documentType || !documentNumber || !fullName || !dateOfBirth) {
-        throw new Error("Please fill in all required fields");
+      // Validate with zod schema
+      const validatedData = validateForm();
+      if (!validatedData) {
+        setIsLoading(false);
+        return;
       }
 
       const { error } = await supabase.from("kyc_documents").insert({
         user_id: user.id,
-        document_type: documentType as any,
-        document_number: documentNumber.trim(),
-        full_name: fullName.trim(),
-        date_of_birth: dateOfBirth,
+        document_type: validatedData.documentType as any,
+        document_number: validatedData.documentNumber,
+        full_name: validatedData.fullName,
+        date_of_birth: validatedData.dateOfBirth,
       });
 
       if (error) throw error;
@@ -222,10 +313,20 @@ const KYCVerification = () => {
                     id="full-name"
                     type="text"
                     value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
+                    onChange={(e) => {
+                      setFullName(e.target.value);
+                      if (validationErrors.fullName) {
+                        setValidationErrors(prev => ({ ...prev, fullName: "" }));
+                      }
+                    }}
                     placeholder="Enter your full name"
-                    required
+                    maxLength={100}
+                    className={validationErrors.fullName ? "border-destructive" : ""}
                   />
+                  {validationErrors.fullName && (
+                    <p className="text-sm text-destructive">{validationErrors.fullName}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground">{fullName.length}/100 characters</p>
                 </div>
 
                 <div className="space-y-2">
@@ -234,10 +335,24 @@ const KYCVerification = () => {
                     id="document-number"
                     type="text"
                     value={documentNumber}
-                    onChange={(e) => setDocumentNumber(e.target.value)}
-                    placeholder="Enter document number"
-                    required
+                    onChange={(e) => {
+                      setDocumentNumber(e.target.value.toUpperCase());
+                      if (validationErrors.documentNumber) {
+                        setValidationErrors(prev => ({ ...prev, documentNumber: "" }));
+                      }
+                    }}
+                    placeholder={documentType ? documentFormatHints[documentType as keyof typeof documentFormatHints] : "Select document type first"}
+                    maxLength={50}
+                    className={validationErrors.documentNumber ? "border-destructive" : ""}
                   />
+                  {validationErrors.documentNumber && (
+                    <p className="text-sm text-destructive">{validationErrors.documentNumber}</p>
+                  )}
+                  {documentType && (
+                    <p className="text-xs text-muted-foreground">
+                      Format: {documentFormatHints[documentType as keyof typeof documentFormatHints]}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -246,9 +361,18 @@ const KYCVerification = () => {
                     id="date-of-birth"
                     type="date"
                     value={dateOfBirth}
-                    onChange={(e) => setDateOfBirth(e.target.value)}
-                    required
+                    onChange={(e) => {
+                      setDateOfBirth(e.target.value);
+                      if (validationErrors.dateOfBirth) {
+                        setValidationErrors(prev => ({ ...prev, dateOfBirth: "" }));
+                      }
+                    }}
+                    max={new Date(new Date().getFullYear() - 1, new Date().getMonth(), new Date().getDate()).toISOString().split('T')[0]}
+                    className={validationErrors.dateOfBirth ? "border-destructive" : ""}
                   />
+                  {validationErrors.dateOfBirth && (
+                    <p className="text-sm text-destructive">{validationErrors.dateOfBirth}</p>
+                  )}
                 </div>
 
                 <div className="flex gap-4">
