@@ -1,12 +1,18 @@
 import { Link } from "react-router-dom";
-import { Activity, LogOut } from "lucide-react";
+import { Activity, LogOut, Shield } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import KYCStatusBadge from "./KYCStatusBadge";
 import { ThemeToggle } from "./ThemeToggle";
 
 const Header = () => {
-  const { user, signOut } = useAuth();
+  const { user, role, signOut } = useAuth();
+  
+  const getDashboardLink = () => {
+    if (role === "admin") return "/admin-dashboard";
+    if (role === "doctor") return "/doctor-dashboard";
+    return "/dashboard";
+  };
   
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -23,15 +29,21 @@ const Header = () => {
             Home
           </Link>
           {user && (
-            <Link to="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            <Link to={getDashboardLink()} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Dashboard
+            </Link>
+          )}
+          {role === "admin" && (
+            <Link to="/admin-dashboard" className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors">
+              <Shield className="h-4 w-4" />
+              Admin
             </Link>
           )}
         </nav>
 
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          {user && <KYCStatusBadge />}
+          {user && role !== "admin" && <KYCStatusBadge />}
           {user ? (
             <Button variant="ghost" onClick={signOut}>
               <LogOut className="h-4 w-4 mr-2" />
