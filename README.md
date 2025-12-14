@@ -252,7 +252,7 @@ This is a demonstration project. For production use with real patient data:
 
 For issues and questions:
 - Open an issue on GitHub
-- Contact: your-email@example.com
+- Contact: 6aruch@gmail.com
 
 ## 🙏 Acknowledgments
 
