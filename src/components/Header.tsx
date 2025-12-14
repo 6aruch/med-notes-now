@@ -3,6 +3,7 @@ import { Activity, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import KYCStatusBadge from "./KYCStatusBadge";
+import { ThemeToggle } from "./ThemeToggle";
 
 const Header = () => {
   const { user, signOut } = useAuth();
@@ -28,7 +29,8 @@ const Header = () => {
           )}
         </nav>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
           {user && <KYCStatusBadge />}
           {user ? (
             <Button variant="ghost" onClick={signOut}>
