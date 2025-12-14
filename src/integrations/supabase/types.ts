@@ -378,9 +378,40 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_doctor: {
+        Args: { doctor_id: string; should_approve: boolean }
+        Returns: undefined
+      }
       doctor_has_patient: {
         Args: { _doctor_user_id: string; _patient_id: string }
         Returns: boolean
+      }
+      get_pending_doctors: {
+        Args: never
+        Returns: {
+          bio: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          license_number: string
+          specialization: string
+          user_id: string
+          years_of_experience: number
+        }[]
+      }
+      get_pending_kyc: {
+        Args: never
+        Returns: {
+          created_at: string
+          date_of_birth: string
+          document_number: string
+          document_type: Database["public"]["Enums"]["kyc_document_type"]
+          full_name: string
+          id: string
+          user_email: string
+          user_id: string
+        }[]
       }
       has_role: {
         Args: {
@@ -390,6 +421,14 @@ export type Database = {
         Returns: boolean
       }
       is_approved_doctor: { Args: { _user_id: string }; Returns: boolean }
+      process_kyc: {
+        Args: {
+          kyc_id: string
+          new_status: Database["public"]["Enums"]["kyc_status"]
+          reason?: string
+        }
+        Returns: undefined
+      }
       verify_user_role: {
         Args: never
         Returns: {

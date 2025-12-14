@@ -60,14 +60,16 @@ const Auth = () => {
       if (error) throw error;
       
       if (data.user) {
-        // Check user role
-        const { data: rolesData } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", data.user.id)
-          .single();
+        // Use server-side RPC for secure role verification
+        const { data: roleData, error: roleError } = await supabase.rpc('verify_user_role');
         
-        if (rolesData?.role === "doctor") {
+        if (roleError) throw roleError;
+        
+        const userRole = roleData?.[0]?.role;
+        
+        if (userRole === "admin") {
+          navigate("/admin-dashboard");
+        } else if (userRole === "doctor") {
           navigate("/doctor-dashboard");
         } else {
           navigate("/dashboard");
