@@ -439,6 +439,12 @@ export type Database = {
     }
     Enums: {
       app_role: "patient" | "doctor" | "admin"
+      audit_action_type:
+        | "STATUS_CHANGED"
+        | "DOCUMENT_VIEWED"
+        | "DOCUMENT_UPDATED"
+        | "VERIFICATION_STARTED"
+        | "VERIFICATION_COMPLETED"
       kyc_document_type:
         | "nin"
         | "passport"
@@ -574,6 +580,13 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["patient", "doctor", "admin"],
+      audit_action_type: [
+        "STATUS_CHANGED",
+        "DOCUMENT_VIEWED",
+        "DOCUMENT_UPDATED",
+        "VERIFICATION_STARTED",
+        "VERIFICATION_COMPLETED",
+      ],
       kyc_document_type: [
         "nin",
         "passport",
