@@ -26,11 +26,6 @@ const errorCodeMap: Record<string, string> = {
 export const getUserFriendlyError = (error: any): string => {
   if (!error) return 'An error occurred. Please try again.';
   
-  // Log full error for developers (only in development)
-  if (import.meta.env.DEV) {
-    console.error('Database error:', error);
-  }
-  
   // Check for error code
   if (error.code && errorCodeMap[error.code]) {
     return errorCodeMap[error.code];
