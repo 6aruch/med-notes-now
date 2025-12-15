@@ -1,4 +1,3 @@
-cat > vite.config.ts << 'EOF'
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -16,4 +15,3 @@ export default defineConfig({
     port: 8080,
   },
 });
-EOF
