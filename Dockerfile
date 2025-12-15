@@ -22,23 +22,7 @@ FROM nginx:alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Copy custom nginx config that listens on port 8080
-COPY <<'EOF' /etc/nginx/conf.d/default.conf
-server {
-    listen 8080;
-    server_name _;
-    root /usr/share/nginx/html;
-    index index.html;
-
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-
-    location ~* \.(?:css|js|jpg|jpeg|gif|png|ico|svg|woff|woff2|ttf|eot)$ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-    }
-}
-EOF
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose port 8080 (as required by NodeOps)
 EXPOSE 8080
